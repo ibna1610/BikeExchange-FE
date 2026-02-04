@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-# Website Mua Bán Xe Đạp Thể Thao Cũ - TP.HCM
+
+# BikeExchange - Website Mua Bán Xe Đạp Thể Thao Cũ - TP.HCM
 
 Dự án website kết nối mua bán xe đạp thể thao đã qua sử dụng tại Thành phố Hồ Chí Minh.
 
@@ -48,5 +48,3 @@ git push origin feature/tên-feature
 
 **Lưu ý:** Dự án đang trong giai đoạn phát triển. Frontend hiện dùng mock data, sẽ được tích hợp với backend khi sẵn sàng.
 =======
-# BikeExchange
->>>>>>> 743962e8edfdae1c31294d87d0cdfd2e9816a0ce
