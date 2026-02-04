@@ -1,0 +1,181 @@
+.inspector-page,
+.inspector-form-page {
+  padding: 24px 16px 40px;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.inspector-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.inspector-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(5, 150, 105, 0.15);
+  color: var(--color-success);
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.filter-bar {
+  margin-bottom: 20px;
+}
+
+.filter-bar select {
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.inspection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inspection-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.inspection-card h4 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.inspection-card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-note {
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* Inspector Form */
+.inspector-form-page .form-section {
+  background: var(--color-bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.inspector-form-page .form-section h3 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.inspector-form-page .form-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.inspector-form-page .form-section input,
+.inspector-form-page .form-section textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.inspector-form-page .form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.inspection-form {
+  max-width: 600px;
+}
+
+.inspect-row {
+  margin-bottom: 16px;
+}
+
+.inspect-row label:first-child {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin: 0 !important;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
+.label-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius-sm);
+  margin: 20px 0;
+  color: var(--color-success);
+}
+
+.label-preview p {
+  margin: 0;
+  font-size: 14px;
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register as registerApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import './Auth.css'
 
 export default function Register() {
@@ -39,7 +40,7 @@ export default function Register() {
       }
       setError(res.message || 'Đăng ký thất bại.')
     } catch (err) {
-      setError(err.message || 'Có lỗi xảy ra. Khi có API sẽ kết nối backend.')
+      setError(err.message || 'Có lỗi xảy ra.')
     } finally {
       setLoading(false)
     }
@@ -118,6 +119,9 @@ export default function Register() {
         </form>
         <p className="auth-switch">
           Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+        </p>
+        <p className="auth-switch auth-switch-seller">
+          Muốn bán xe? Sau khi đăng nhập, vào <Link to="/register-seller">Đăng ký làm người bán</Link>
         </p>
       </div>
     </div>

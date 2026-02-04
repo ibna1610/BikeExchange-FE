@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login } from '../services/api'
+import { login as loginApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import './Auth.css'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -15,18 +17,15 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      // TODO: Khi có backend JWT, hàm login() sẽ gọi API thật và trả về token
-      const res = await login({ email, password })
-      if (res.success && res.token) {
-        // TODO: Lưu token từ backend. Ví dụ: localStorage.setItem('token', res.token)
-        localStorage.setItem('token', res.token)
-        if (res.user) localStorage.setItem('user', JSON.stringify(res.user))
-        navigate('/')
+      const res = await loginApi({ email, password })
+      if (res.success && res.token && res.user) {
+        login(res.user, res.token)
+        navigate(res.user?.roles?.includes('ADMIN') ? '/admin' : '/')
         return
       }
       setError(res.message || 'Đăng nhập thất bại.')
     } catch (err) {
-      setError(err.message || 'Có lỗi xảy ra. Khi có API sẽ kết nối backend.')
+      setError(err.message || 'Có lỗi xảy ra.')
     } finally {
       setLoading(false)
     }

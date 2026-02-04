@@ -13,10 +13,10 @@ export default function Footer() {
           <Link to="/">Điều khoản sử dụng</Link>
         </div>
         <p className="footer-copy">
-          © {new Date().getFullYear()} Mua Bán Xe Đạp Thể Thao Cũ - Khu vực TP.HCM. All rights reserved.
+          © {new Date().getFullYear()} BikeExchange - Mua Bán Xe Đạp Thể Thao TP.HCM
         </p>
         <p className="footer-note">
-          Website kết nối mua bán xe đạp thể thao đã qua sử dụng tại Thành phố Hồ Chí Minh.
+          Kết nối mua bán xe đạp thể thao đã qua sử dụng • Kiểm định uy tín • Giao dịch an toàn
         </p>
       </div>
     </footer>
