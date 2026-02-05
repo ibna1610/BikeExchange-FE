@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BICYCLE_TYPES, BICYCLE_BRANDS, FRAME_SIZES, CONDITIONS } from '../data/hardcoded'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus, X } from 'lucide-react'
 import './CreateListing.css'
 
 export default function SellerCreateListing() {
@@ -14,15 +14,40 @@ export default function SellerCreateListing() {
     year: '',
     price: '',
     description: '',
-    images: '',
+    images: [],
   })
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
+  const handleImageChange = (index, value) => {
+    setForm((prev) => {
+      const newImages = [...prev.images]
+      newImages[index] = value
+      return { ...prev, images: newImages }
+    })
+  }
+
+  const addImageField = () => {
+    setForm((prev) => ({ ...prev, images: [...prev.images, ''] }))
+  }
+
+  const removeImageField = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
+    // Filter out empty image URLs
+    const validImages = form.images.filter(img => img.trim() !== '')
+    if (validImages.length === 0) {
+      alert('Vui lòng thêm ít nhất một hình ảnh.')
+      return
+    }
     alert('Đăng tin thành công (mock). Khi có API sẽ lưu thật.')
   }
 
@@ -38,13 +63,40 @@ export default function SellerCreateListing() {
         <section className="form-section">
           <h3>Hình ảnh</h3>
           <p className="form-hint">Kéo thả hoặc click để upload (URL tạm thời - sẽ thay bằng upload thật khi có backend)</p>
-          <input
-            type="text"
-            name="images"
-            value={form.images}
-            onChange={handleChange}
-            placeholder="URL ảnh, phân cách bằng dấu phẩy"
-          />
+          <div className="image-upload-list">
+            {form.images.length === 0 ? (
+              <div className="image-upload-empty">
+                <p>Chưa có hình ảnh nào. Nhấn nút "Thêm ảnh" để bắt đầu.</p>
+              </div>
+            ) : (
+              form.images.map((imageUrl, index) => (
+                <div key={index} className="image-upload-item">
+                  <input
+                    type="text"
+                    value={imageUrl}
+                    onChange={(e) => handleImageChange(index, e.target.value)}
+                    placeholder={`URL ảnh ${index + 1}`}
+                    className="image-url-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImageField(index)}
+                    className="btn-remove-image"
+                    title="Xóa ảnh này"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              ))
+            )}
+            <button
+              type="button"
+              onClick={addImageField}
+              className="btn-add-image"
+            >
+              <Plus size={18} /> Thêm ảnh
+            </button>
+          </div>
         </section>
 
         <section className="form-section">

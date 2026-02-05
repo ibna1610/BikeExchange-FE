@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getListingById } from '../services/api'
-import { MessageCircle, Heart, ShoppingCart, ShieldCheck, ArrowLeft } from 'lucide-react'
+import { MessageCircle, Heart, ShoppingCart, ShieldCheck, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import './ListingDetail.css'
 
 export default function ListingDetail() {
   const { id } = useParams()
   const [item, setItem] = useState(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [wishlist, setWishlist] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('wishlist') || '[]')
     } catch { return [] }
   })
+  // Touch/swipe support for mobile - MUST be declared before any early returns
+  const [touchStart, setTouchStart] = useState(null)
+  const [touchEnd, setTouchEnd] = useState(null)
 
   useEffect(() => {
     getListingById(id).then(setItem)
@@ -36,7 +40,46 @@ export default function ListingDetail() {
   }
 
   const isInWishlist = wishlist.includes(item.id)
-  const images = item.images || [item.image]
+  const images = item.images && item.images.length > 0 ? item.images : (item.image ? [item.image] : [])
+  
+  const nextImage = () => {
+    if (images.length === 0) return
+    setCurrentImageIndex((prev) => (prev + 1) % images.length)
+  }
+
+  const prevImage = () => {
+    if (images.length === 0) return
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
+
+  const goToImage = (index) => {
+    if (images.length === 0) return
+    setCurrentImageIndex(index)
+  }
+
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd || images.length === 0) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+    if (isLeftSwipe) {
+      nextImage()
+    }
+    if (isRightSwipe) {
+      prevImage()
+    }
+  }
 
   return (
     <div className="listing-detail-page main-content">
@@ -46,14 +89,60 @@ export default function ListingDetail() {
 
       <div className="detail-layout">
         <div className="detail-gallery">
-          <div className="gallery-main">
-            <img src={images[0] || item.image} alt={item.title} />
+          <div 
+            className="gallery-main"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            {images.length > 0 ? (
+              <img src={images[currentImageIndex]} alt={`${item.title} - Ảnh ${currentImageIndex + 1}`} />
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-muted)' }}>
+                Không có hình ảnh
+              </div>
+            )}
             {item.inspected && (
               <span className="badge-inspected badge-large">
                 <ShieldCheck size={16} /> Đã kiểm định
               </span>
             )}
+            {images.length > 1 && (
+              <>
+                <button 
+                  className="gallery-nav gallery-nav-prev" 
+                  onClick={prevImage}
+                  aria-label="Ảnh trước"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button 
+                  className="gallery-nav gallery-nav-next" 
+                  onClick={nextImage}
+                  aria-label="Ảnh sau"
+                >
+                  <ChevronRight size={24} />
+                </button>
+                <div className="gallery-indicator">
+                  {currentImageIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
           </div>
+          {images.length > 1 && (
+            <div className="gallery-thumbnails">
+              {images.map((img, index) => (
+                <button
+                  key={index}
+                  className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
+                  onClick={() => goToImage(index)}
+                  aria-label={`Xem ảnh ${index + 1}`}
+                >
+                  <img src={img} alt={`${item.title} - Thumbnail ${index + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="detail-info">

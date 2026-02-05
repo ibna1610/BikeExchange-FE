@@ -47,6 +47,6 @@ git push origin feature/tên-feature
 ```
 
 **Lưu ý:** Dự án đang trong giai đoạn phát triển. Frontend hiện dùng mock data, sẽ được tích hợp với backend khi sẵn sàng.
-=======
-# BikeExchange
->>>>>>> 743962e8edfdae1c31294d87d0cdfd2e9816a0ce
+
+
+
