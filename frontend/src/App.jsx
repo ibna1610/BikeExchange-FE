@@ -14,33 +14,51 @@ import InspectorForm from './pages/InspectorForm'
 import AdminDashboard from './pages/AdminDashboard'
 import Profile from './pages/Profile'
 
+// 👉 thêm Payment
+import Payment from './pages/Payment'
+
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="register-seller" element={<RegisterSeller />} />
-        <Route path="listing/:id" element={<ListingDetail />} />
-        <Route path="account" element={<Account />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="seller" element={<SellerDashboard />} />
-        <Route path="seller/create" element={<SellerCreateListing />} />
-        <Route path="seller/listings" element={<SellerListings />} />
-        <Route path="inspector" element={<InspectorDashboard />} />
-        <Route path="inspector/inspect/:id" element={<InspectorForm />} />
-        <Route path="admin" element={<AdminDashboard />} />
-        <Route path="admin/users" element={<AdminDashboard />} />
-        <Route path="admin/listings" element={<AdminDashboard />} />
-        <Route path="admin/reports" element={<AdminDashboard />} />
-        <Route path="admin/categories" element={<AdminDashboard />} />
-        <Route path="admin/transactions" element={<AdminDashboard />} />
-        <Route path="admin/stats" element={<AdminDashboard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="register-seller" element={<RegisterSeller />} />
+
+          <Route path="listing/:id" element={<ListingDetail />} />
+
+          <Route path="account" element={<Account />} />
+          <Route path="profile" element={<Profile />} />
+
+          {/* SELLER */}
+          <Route path="seller" element={<SellerDashboard />} />
+          <Route path="seller/create" element={<SellerCreateListing />} />
+          <Route path="seller/listings" element={<SellerListings />} />
+
+          {/* INSPECTOR */}
+          <Route path="inspector" element={<InspectorDashboard />} />
+          <Route path="inspector/inspect/:id" element={<InspectorForm />} />
+
+          {/* ADMIN */}
+          <Route path="admin" element={<AdminDashboard />} />
+          <Route path="admin/users" element={<AdminDashboard />} />
+          <Route path="admin/listings" element={<AdminDashboard />} />
+          <Route path="admin/reports" element={<AdminDashboard />} />
+          <Route path="admin/categories" element={<AdminDashboard />} />
+          <Route path="admin/transactions" element={<AdminDashboard />} />
+          <Route path="admin/stats" element={<AdminDashboard />} />
+
+          {/* 💳 PAYMENT (mock – code cứng) */}
+          <Route path="payment" element={<Payment />} />
+
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
   )
 }
 
 export default App
+
