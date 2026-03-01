@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { BICYCLE_TYPES, BICYCLE_BRANDS, FRAME_SIZES, CONDITIONS } from '../data/hardcoded'
+import { getBrands } from '../services/api'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import './CreateListing.css'
 
@@ -16,6 +17,21 @@ export default function SellerCreateListing() {
     description: '',
     images: [],
   })
+  const [brandOptions, setBrandOptions] = useState(BICYCLE_BRANDS.filter((b) => b !== 'Tất cả hãng'))
+
+  useEffect(() => {
+    let cancelled = false
+    getBrands()
+      .then((res) => {
+        if (!cancelled && res?.data?.length) {
+          setBrandOptions(res.data)
+        }
+      })
+      .catch(() => {
+        // Giữ nguyên brandOptions mặc định
+      })
+    return () => { cancelled = true }
+  }, [])
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -119,7 +135,7 @@ export default function SellerCreateListing() {
               Hãng
               <select name="brand" value={form.brand} onChange={handleChange} required>
                 <option value="">Chọn</option>
-                {BICYCLE_BRANDS.filter((b) => b !== 'Tất cả hãng').map((b) => (
+                {brandOptions.map((b) => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
