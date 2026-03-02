@@ -68,14 +68,26 @@ export async function login(credentials) {
     });
 
     if (res.ok) {
-      const data = await res.json();
+      const json = await res.json();
 
-      // Backend trả JWT + user
-      return {
-        success: true,
-        token: data.token || data.jwt || "",
-        user: data.user || data,
-      };
+      // ✅ BE format: { success, data }
+      if (json?.success && json?.data) {
+        const d = json.data;
+
+        const user = {
+          id: d.id,
+          email: d.email,
+          name: d.fullName,
+          phone: d.phone,
+          roles: d.role ? [d.role] : [],
+        };
+
+        return {
+          success: true,
+          token: d.accessToken,
+          user,
+        };
+      }
     }
   } catch (e) {
     console.warn("Backend login failed → fallback mock");
@@ -122,6 +134,8 @@ export async function register(data) {
   const email = (data.email || "").trim();
   const password = data.password || "";
   const fullName = data.name || data.fullName || "";
+  const phone = data.phone || "";
+  const address = data.address || "";
 
   // 🔹 TRY BACKEND
   try {
@@ -134,13 +148,16 @@ export async function register(data) {
         email,
         password,
         fullName,
+        phone,
+        address,
       }),
     });
 
     if (res.ok) {
+      const json = await res.json();
       return {
-        success: true,
-        message: "Đăng ký thành công.",
+        success: json?.success ?? true,
+        message: json?.message || "Đăng ký thành công.",
       };
     }
   } catch (e) {
