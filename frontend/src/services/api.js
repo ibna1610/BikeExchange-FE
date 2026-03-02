@@ -45,6 +45,7 @@ const TEST_ACCOUNTS = {
     roles: ["BUYER", "ADMIN"],
   },
 };
+
 const TEST_PASSWORD = "Matkhau12345@";
 
 /**
@@ -57,7 +58,6 @@ export async function login(credentials) {
   const email = (credentials.email || "").trim();
   const password = credentials.password || "";
 
-  // 🔹 TRY BACKEND
   try {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
@@ -70,7 +70,6 @@ export async function login(credentials) {
     if (res.ok) {
       const json = await res.json();
 
-      // ✅ BE format: { success, data }
       if (json?.success && json?.data) {
         const d = json.data;
 
@@ -93,13 +92,11 @@ export async function login(credentials) {
     console.warn("Backend login failed → fallback mock");
   }
 
-  // 🔹 FALLBACK MOCK (GIỮ NGUYÊN)
+  // fallback mock
   await new Promise((r) => setTimeout(r, 300));
   const account = TEST_ACCOUNTS[email.toLowerCase()];
   if (account && password === TEST_PASSWORD) {
-    const { getProfile: getStoreProfile } = await import(
-        "../data/store.js"
-        );
+    const { getProfile: getStoreProfile } = await import("../data/store.js");
     const profile = getStoreProfile(account.id);
 
     const user = {
@@ -137,7 +134,6 @@ export async function register(data) {
   const phone = data.phone || "";
   const address = data.address || "";
 
-  // 🔹 TRY BACKEND
   try {
     const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
@@ -164,7 +160,6 @@ export async function register(data) {
     console.warn("Backend register failed → fallback mock");
   }
 
-  // 🔹 FALLBACK MOCK
   await new Promise((r) => setTimeout(r, 300));
   return {
     success: true,
@@ -174,7 +169,7 @@ export async function register(data) {
 
 /**
  * ============================================================
- * PHẦN DƯỚI GIỮ NGUYÊN MOCK CŨ (KHÔNG ĐỔI)
+ * MOCK APIs KHÁC (GIỮ NGUYÊN)
  * ============================================================
  */
 
@@ -182,8 +177,7 @@ export async function registerSeller(data) {
   await new Promise((r) => setTimeout(r, 500));
   return {
     success: true,
-    message:
-        "Đăng ký Seller thành công. Tài khoản của bạn đã được nâng cấp.",
+    message: "Đăng ký Seller thành công. Tài khoản của bạn đã được nâng cấp.",
   };
 }
 
@@ -232,14 +226,13 @@ export async function getListingById(id) {
 }
 
 export async function getProfile(userId) {
-  const { getProfile: getStoreProfile } = await import(
-      "../data/store.js"
-      );
+  const { getProfile: getStoreProfile } = await import("../data/store.js");
   const profile = getStoreProfile(userId);
 
   const account = Object.values(TEST_ACCOUNTS).find(
       (a) => a.id === userId
   );
+
   const email =
       Object.entries(TEST_ACCOUNTS).find(
           ([, a]) => a.id === userId
@@ -270,8 +263,44 @@ export async function submitInspection(listingId, data) {
 }
 
 export async function getBrands() {
-  const { BICYCLE_BRANDS } = await import(
-      "../data/hardcoded.js"
-      );
+  const { BICYCLE_BRANDS } = await import("../data/hardcoded.js");
   return { data: BICYCLE_BRANDS };
+}
+
+/**
+ * ============================================================
+ * ORDERS API (REAL BE)
+ * POST /orders
+ * ============================================================
+ */
+export async function createOrder(bikeId) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return { success: false, message: "Not authenticated" };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        bikeId: Number(bikeId),
+        idempotencyKey: crypto.randomUUID(),
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, message: text || "Order failed" };
+    }
+
+    return await res.json();
+  } catch (e) {
+    console.warn("Create order failed (BE not ready)");
+    return { success: false, message: "Backend not available" };
+  }
 }
