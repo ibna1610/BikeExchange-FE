@@ -1,51 +1,51 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { register as registerApi } from '../services/api'
-import './Auth.css'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "./Auth.css";
 
 export default function Register() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { register } = useAuth();
+
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: ''
-  })
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
     if (form.password !== form.confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp.')
-      return
+      setError("Mật khẩu xác nhận không khớp.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
+
     try {
-      const res = await registerApi(form)
+      await register(form);
 
-      if (res.success) {
-        setSuccess(res.message || 'Đăng ký thành công.')
-        setTimeout(() => navigate('/login'), 1200)
-      } else {
-        setError(res.message || 'Đăng ký thất bại.')
-      }
+      setSuccess("Đăng ký thành công. Bạn có thể đăng nhập.");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
-      setError(err.message || 'Có lỗi xảy ra.')
+      setError(err.message || "Đăng ký thất bại.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
       <div className="auth-page">
@@ -96,6 +96,7 @@ export default function Register() {
                   value={form.password}
                   onChange={handleChange}
                   required
+                  minLength={6}
               />
             </label>
 
@@ -111,14 +112,19 @@ export default function Register() {
             </label>
 
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+              {loading ? "Đang đăng ký..." : "Đăng ký"}
             </button>
           </form>
 
           <p className="auth-switch">
             Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
           </p>
+
+          <p className="auth-switch auth-switch-seller">
+            Muốn bán xe? Sau khi đăng nhập, vào{" "}
+            <Link to="/register-seller">Đăng ký làm người bán</Link>
+          </p>
         </div>
       </div>
-  )
+  );
 }

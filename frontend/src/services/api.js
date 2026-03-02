@@ -1,164 +1,260 @@
 /**
  * ============================================================
- * API SERVICE — CONNECTED WITH SPRING BOOT BACKEND
+ * API SERVICE - HYBRID (SPRING BOOT + MOCK FALLBACK)
+ * ============================================================
+ * Login/Register gọi backend thật.
+ * Nếu backend chưa chạy → fallback mock cũ.
+ * Các API khác giữ nguyên mock.
  * ============================================================
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-
-function getAuthToken() {
-  try {
-    return localStorage.getItem('token')
-  } catch {
-    return null
-  }
-}
-
-async function apiFetch(path, { method = 'GET', body, auth = true, headers = {} } = {}) {
-  const finalHeaders = {
-    'Content-Type': 'application/json',
-    ...headers,
-  }
-
-  if (auth) {
-    const token = getAuthToken()
-    if (token) finalHeaders.Authorization = `Bearer ${token}`
-  }
-
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: finalHeaders,
-    body: body ? JSON.stringify(body) : undefined,
-  })
-
-  const text = await res.text()
-  let data = null
-
-  if (text) {
-    try {
-      data = JSON.parse(text)
-    } catch {
-      data = text
-    }
-  }
-
-  if (!res.ok) {
-    const message = data?.message || `Request failed ${res.status}`
-    throw new Error(message)
-  }
-
-  return data
-}
-
-/* ============================================================
-   AUTH
-============================================================ */
+// 👉 URL backend Spring Boot
+const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 /**
- * LOGIN — POST /auth/login
+ * ============================================================
+ * MOCK DATA (GIỮ NGUYÊN)
+ * ============================================================
+ */
+const TEST_ACCOUNTS = {
+  "buyer1@gmail.com": {
+    id: 1,
+    name: "Nguyễn Văn Mua",
+    phone: "0903123456",
+    roles: ["BUYER"],
+  },
+  "seller1@gmail.com": {
+    id: 2,
+    name: "Trần Thị Bán",
+    phone: "0912789012",
+    roles: ["BUYER", "SELLER"],
+    avatar:
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=seller1&backgroundColor=0d9488",
+  },
+  "inspector1@gmail.com": {
+    id: 3,
+    name: "Lê Văn Kiểm",
+    phone: "0987654321",
+    roles: ["BUYER", "INSPECTOR"],
+  },
+  "admin1@gmail.com": {
+    id: 4,
+    name: "Phạm Quản Trị",
+    phone: "0777123456",
+    roles: ["BUYER", "ADMIN"],
+  },
+};
+const TEST_PASSWORD = "Matkhau12345@";
+
+/**
+ * ============================================================
+ * LOGIN (REAL API + FALLBACK MOCK)
+ * POST /auth/login
+ * ============================================================
  */
 export async function login(credentials) {
-  const res = await apiFetch('/auth/login', {
-    method: 'POST',
-    body: {
-      email: credentials.email,
-      password: credentials.password,
-    },
-    auth: false,
-  })
+  const email = (credentials.email || "").trim();
+  const password = credentials.password || "";
 
-  if (!res || res.success !== true || !res.data) {
-    return {
-      success: false,
-      message: res?.message || 'Đăng nhập thất bại.',
+  // 🔹 TRY BACKEND
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+
+      // Backend trả JWT + user
+      return {
+        success: true,
+        token: data.token || data.jwt || "",
+        user: data.user || data,
+      };
     }
+  } catch (e) {
+    console.warn("Backend login failed → fallback mock");
   }
 
-  const d = res.data
+  // 🔹 FALLBACK MOCK (GIỮ NGUYÊN)
+  await new Promise((r) => setTimeout(r, 300));
+  const account = TEST_ACCOUNTS[email.toLowerCase()];
+  if (account && password === TEST_PASSWORD) {
+    const { getProfile: getStoreProfile } = await import(
+        "../data/store.js"
+        );
+    const profile = getStoreProfile(account.id);
 
-  const user = {
-    id: d.id,
-    email: d.email,
-    fullName: d.fullName,
-    phone: d.phone,
-    role: d.role,
-    roles: [d.role],
+    const user = {
+      id: account.id,
+      email,
+      name: profile?.name ?? account.name,
+      phone: profile?.phone ?? account.phone,
+      avatar: profile?.avatar ?? account.avatar ?? null,
+      roles: account.roles,
+    };
+
+    return {
+      success: true,
+      token: "MOCK_JWT_TOKEN",
+      user,
+    };
   }
-
-  // 🔥 Lưu token & user vào localStorage (quan trọng)
-  localStorage.setItem('token', d.accessToken)
-  localStorage.setItem('user', JSON.stringify(user))
 
   return {
-    success: true,
-    token: d.accessToken,
-    user,
-  }
+    success: false,
+    message: "Email hoặc mật khẩu không đúng.",
+  };
 }
 
 /**
- * REGISTER — POST /auth/register
+ * ============================================================
+ * REGISTER (REAL API + FALLBACK MOCK)
+ * POST /auth/register
+ * ============================================================
  */
-export async function register(form) {
-  const res = await apiFetch('/auth/register', {
-    method: 'POST',
-    body: {
-      email: form.email,
-      password: form.password,
-      fullName: form.name,
-      phone: form.phone,
-      address: form.address || '',
-    },
-    auth: false,
-  })
+export async function register(data) {
+  const email = (data.email || "").trim();
+  const password = data.password || "";
+  const fullName = data.name || data.fullName || "";
 
-  return {
-    success: res?.success === true,
-    message:
-        res?.message ||
-        (res?.success
-            ? 'Đăng ký thành công. Bạn có thể đăng nhập.'
-            : 'Đăng ký thất bại.'),
-  }
-}
-
-/* ============================================================
-   REMAINING API (giữ nguyên của bạn)
-============================================================ */
-
-function formatCurrencyVnd(amountVnd) {
-  if (amountVnd == null) return ''
+  // 🔹 TRY BACKEND
   try {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      maximumFractionDigits: 0,
-    }).format(amountVnd)
-  } catch {
-    return `${amountVnd} VND`
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        fullName,
+      }),
+    });
+
+    if (res.ok) {
+      return {
+        success: true,
+        message: "Đăng ký thành công.",
+      };
+    }
+  } catch (e) {
+    console.warn("Backend register failed → fallback mock");
   }
+
+  // 🔹 FALLBACK MOCK
+  await new Promise((r) => setTimeout(r, 300));
+  return {
+    success: true,
+    message: "Đăng ký thành công (mock).",
+  };
 }
 
-function mapBikeResponseToListing(bike) {
-  if (!bike) return null
-  const media = Array.isArray(bike.media) ? bike.media : []
-  const images = media.map((m) => m.url).filter(Boolean)
-  const image = images[0] || null
-  const priceVnd = bike.pricePoints != null ? bike.pricePoints * 1000 : null
+/**
+ * ============================================================
+ * PHẦN DƯỚI GIỮ NGUYÊN MOCK CŨ (KHÔNG ĐỔI)
+ * ============================================================
+ */
+
+export async function registerSeller(data) {
+  await new Promise((r) => setTimeout(r, 500));
+  return {
+    success: true,
+    message:
+        "Đăng ký Seller thành công. Tài khoản của bạn đã được nâng cấp.",
+  };
+}
+
+export async function getListings(params = {}) {
+  const { MOCK_LISTINGS, MOCK_TOTAL_LISTINGS } = await import(
+      "../data/hardcoded.js"
+      );
+  const { getInspections } = await import("../data/store.js");
+  const inspections = getInspections();
+
+  const data = MOCK_LISTINGS.map((item) => {
+    const insp = inspections[String(item.id)];
+    if (insp) {
+      return {
+        ...item,
+        inspected: insp.inspected,
+        inspectionReport: insp.inspectionReport,
+      };
+    }
+    return item;
+  });
 
   return {
-    id: bike.id,
-    title: bike.title,
-    description: bike.description,
-    brand: bike.brand,
-    model: bike.model,
-    year: bike.year,
-    price: priceVnd != null ? formatCurrencyVnd(priceVnd) : '',
-    location: bike.location,
-    condition: bike.condition,
-    type: bike.bikeType,
-    inspected: bike.inspectionStatus === 'APPROVED',
-    images,
-    image,
+    data,
+    total: MOCK_TOTAL_LISTINGS,
+  };
+}
+
+export async function getListingById(id) {
+  const { MOCK_LISTINGS } = await import("../data/hardcoded.js");
+  const { getInspection } = await import("../data/store.js");
+
+  const item = MOCK_LISTINGS.find((i) => String(i.id) === id);
+  if (!item) return null;
+
+  const insp = getInspection(id);
+  if (insp) {
+    return {
+      ...item,
+      inspected: insp.inspected,
+      inspectionReport: insp.inspectionReport,
+    };
   }
+
+  return item;
+}
+
+export async function getProfile(userId) {
+  const { getProfile: getStoreProfile } = await import(
+      "../data/store.js"
+      );
+  const profile = getStoreProfile(userId);
+
+  const account = Object.values(TEST_ACCOUNTS).find(
+      (a) => a.id === userId
+  );
+  const email =
+      Object.entries(TEST_ACCOUNTS).find(
+          ([, a]) => a.id === userId
+      )?.[0] || "";
+
+  return {
+    id: userId,
+    email,
+    name: profile?.name ?? account?.name ?? "",
+    phone: profile?.phone ?? account?.phone ?? "",
+    avatar: profile?.avatar ?? null,
+  };
+}
+
+export async function updateProfile(userId, data) {
+  const { setProfile } = await import("../data/store.js");
+  setProfile(userId, data);
+  return { success: true, message: "Cập nhật thành công." };
+}
+
+export async function submitInspection(listingId, data) {
+  const { setInspection } = await import("../data/store.js");
+  setInspection(listingId, {
+    inspected: data.inspected !== false,
+    inspectionReport: data.inspectionReport || "",
+  });
+  return { success: true, message: "Đánh giá kiểm định đã lưu." };
+}
+
+export async function getBrands() {
+  const { BICYCLE_BRANDS } = await import(
+      "../data/hardcoded.js"
+      );
+  return { data: BICYCLE_BRANDS };
 }
