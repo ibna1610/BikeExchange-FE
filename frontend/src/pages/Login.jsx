@@ -1,32 +1,37 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import "./Auth.css";
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { login as loginApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
+import './Auth.css'
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
     try {
-      const user = await login({ email, password });
+      const res = await loginApi({ email, password })
 
-      navigate(user?.roles?.includes("ADMIN") ? "/admin" : "/");
+      if (res.success) {
+        login(res.user, res.token)
+        navigate(res.user?.roles?.includes('ADMIN') ? '/admin' : '/')
+      } else {
+        setError(res.message || 'Đăng nhập thất bại.')
+      }
     } catch (err) {
-      setError(err.message || "Đăng nhập thất bại.");
+      setError(err.message || 'Có lỗi xảy ra.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
       <div className="auth-page">
@@ -39,10 +44,9 @@ export default function Login() {
             <label>
               Email
               <input
-                  type="text"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
                   required
               />
             </label>
@@ -53,13 +57,12 @@ export default function Login() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
                   required
               />
             </label>
 
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </form>
 
@@ -68,5 +71,5 @@ export default function Login() {
           </p>
         </div>
       </div>
-  );
+  )
 }
