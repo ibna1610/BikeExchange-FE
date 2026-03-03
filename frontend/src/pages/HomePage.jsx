@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BICYCLE_BRANDS, BICYCLE_TYPES, FRAME_SIZES, CONDITIONS, REGION, MOCK_LISTINGS, MOCK_TOTAL_LISTINGS } from '../data/hardcoded'
-import { getListings } from '../services/api'
+import { getListings, getBrands } from '../services/api'
 import { Heart, ShieldCheck, MapPin } from 'lucide-react'
 import './HomePage.css'
 
@@ -11,6 +11,7 @@ export default function HomePage() {
   const [listings, setListings] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [brandOptions, setBrandOptions] = useState(BICYCLE_BRANDS)
   const [filters, setFilters] = useState({
     type: '',
     brand: '',
@@ -41,6 +42,18 @@ export default function HomePage() {
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
+      })
+    getBrands()
+      .then((res) => {
+        if (!cancelled && res?.data?.length) {
+          const names = res.data
+          // Thêm option "Tất cả hãng" ở đầu nếu chưa có
+          const withAll = names.includes('Tất cả hãng') ? names : ['Tất cả hãng', ...names]
+          setBrandOptions(withAll)
+        }
+      })
+      .catch(() => {
+        // Giữ nguyên brandOptions mặc định
       })
     return () => { cancelled = true }
   }, [])
@@ -101,7 +114,7 @@ export default function HomePage() {
               value={filters.brand}
               onChange={(e) => setFilters((f) => ({ ...f, brand: e.target.value }))}
             >
-              {BICYCLE_BRANDS.map((b) => (
+              {brandOptions.map((b) => (
                 <option key={b} value={b === 'Tất cả hãng' ? '' : b}>{b}</option>
               ))}
             </select>
