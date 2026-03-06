@@ -5,7 +5,7 @@
  */
 
 export const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+    import.meta.env.VITE_API_URL || "http://localhost:8080/api"
 
 /**
  * ============================================================
@@ -38,9 +38,9 @@ const TEST_ACCOUNTS = {
     phone: "0777123456",
     roles: ["BUYER", "ADMIN"],
   },
-};
+}
 
-const TEST_PASSWORD = "Matkhau12345@";
+const TEST_PASSWORD = "Matkhau12345@"
 
 /**
  * ============================================================
@@ -49,8 +49,8 @@ const TEST_PASSWORD = "Matkhau12345@";
  */
 
 export async function login(credentials) {
-  const email = (credentials.email || "").trim();
-  const password = credentials.password || "";
+  const email = (credentials.email || "").trim()
+  const password = credentials.password || ""
 
   try {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -59,15 +59,15 @@ export async function login(credentials) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, password }),
-    });
+    })
 
     if (res.ok) {
-      const json = await res.json();
+      const json = await res.json()
 
       if (json?.success && json?.data) {
-        const d = json.data;
+        const d = json.data
 
-        localStorage.setItem("token", d.accessToken);
+        localStorage.setItem("token", d.accessToken)
 
         return {
           success: true,
@@ -79,19 +79,19 @@ export async function login(credentials) {
             phone: d.phone,
             roles: d.role ? [d.role] : [],
           },
-        };
+        }
       }
     }
   } catch (e) {
-    console.warn("Backend login failed → fallback mock");
+    console.warn("Backend login failed → fallback mock")
   }
 
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 300))
 
-  const account = TEST_ACCOUNTS[email.toLowerCase()];
+  const account = TEST_ACCOUNTS[email.toLowerCase()]
 
   if (account && password === TEST_PASSWORD) {
-    localStorage.setItem("token", "MOCK_JWT_TOKEN");
+    localStorage.setItem("token", "MOCK_JWT_TOKEN")
 
     return {
       success: true,
@@ -103,13 +103,13 @@ export async function login(credentials) {
         phone: account.phone,
         roles: account.roles,
       },
-    };
+    }
   }
 
   return {
     success: false,
     message: "Email hoặc mật khẩu không đúng.",
-  };
+  }
 }
 
 /**
@@ -119,45 +119,26 @@ export async function login(credentials) {
  */
 
 export async function register(data) {
-  const email = (data.email || "").trim();
-  const password = data.password || "";
-  const fullName = data.name || "";
-  const phone = data.phone || "";
-  const address = data.address || "";
-
   try {
     const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email,
-        password,
-        fullName,
-        phone,
-        address,
-      }),
-    });
+      body: JSON.stringify(data),
+    })
 
     if (res.ok) {
-      const json = await res.json();
-
-      return {
-        success: json?.success ?? true,
-        message: json?.message || "Đăng ký thành công.",
-      };
+      return await res.json()
     }
   } catch (e) {
-    console.warn("Backend register failed → fallback mock");
+    console.warn("Backend register failed → fallback mock")
   }
-
-  await new Promise((r) => setTimeout(r, 300));
 
   return {
     success: true,
     message: "Đăng ký thành công (mock).",
-  };
+  }
 }
 
 /**
@@ -167,12 +148,12 @@ export async function register(data) {
  */
 
 export async function registerSeller(data) {
-  await new Promise((r) => setTimeout(r, 500));
+  await new Promise((r) => setTimeout(r, 500))
 
   return {
     success: true,
     message: "Đăng ký Seller thành công.",
-  };
+  }
 }
 
 /**
@@ -184,20 +165,20 @@ export async function registerSeller(data) {
 export async function getListings() {
   const { MOCK_LISTINGS, MOCK_TOTAL_LISTINGS } = await import(
       "../data/hardcoded.js"
-      );
+      )
 
   return {
     data: MOCK_LISTINGS,
     total: MOCK_TOTAL_LISTINGS,
-  };
+  }
 }
 
 export async function getListingById(id) {
-  const { MOCK_LISTINGS } = await import("../data/hardcoded.js");
+  const { MOCK_LISTINGS } = await import("../data/hardcoded.js")
 
-  const item = MOCK_LISTINGS.find((i) => String(i.id) === id);
+  const item = MOCK_LISTINGS.find((i) => String(i.id) === id)
 
-  return item || null;
+  return item || null
 }
 
 /**
@@ -207,18 +188,18 @@ export async function getListingById(id) {
  */
 
 export async function getProfile(userId) {
-  const account = Object.values(TEST_ACCOUNTS).find((a) => a.id === userId);
+  const account = Object.values(TEST_ACCOUNTS).find((a) => a.id === userId)
 
   return {
     id: userId,
     email: "",
     name: account?.name ?? "",
     phone: account?.phone ?? "",
-  };
+  }
 }
 
 export async function updateProfile() {
-  return { success: true };
+  return { success: true }
 }
 
 /**
@@ -228,12 +209,12 @@ export async function updateProfile() {
  */
 
 export async function submitInspection(data) {
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 300))
 
   return {
     success: true,
     message: "Inspection submitted",
-  };
+  }
 }
 
 /**
@@ -243,9 +224,9 @@ export async function submitInspection(data) {
  */
 
 export async function getBrands() {
-  const { BICYCLE_BRANDS } = await import("../data/hardcoded.js");
+  const { BICYCLE_BRANDS } = await import("../data/hardcoded.js")
 
-  return { data: BICYCLE_BRANDS };
+  return { data: BICYCLE_BRANDS }
 }
 
 /**
@@ -255,13 +236,12 @@ export async function getBrands() {
  */
 
 export async function createOrder(bikeId) {
-
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token")
 
   const idempotencyKey =
-      Math.random().toString(36).substring(2) + Date.now();
+      Math.random().toString(36).substring(2) + Date.now()
 
-  console.log("Creating order for bike:", bikeId);
+  console.log("Creating order for bike:", bikeId)
 
   const res = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
@@ -273,17 +253,17 @@ export async function createOrder(bikeId) {
       bikeId: bikeId,
       idempotencyKey: idempotencyKey,
     }),
-  });
+  })
 
-  const text = await res.text();
+  const text = await res.text()
 
-  console.log("ORDER RESPONSE:", text);
+  console.log("ORDER RESPONSE:", text)
 
   if (!res.ok) {
-    throw new Error(text);
+    throw new Error(text)
   }
 
-  return JSON.parse(text);
+  return JSON.parse(text)
 }
 
 /**
@@ -294,7 +274,7 @@ export async function createOrder(bikeId) {
 
 export async function createVNPayPayment(amount) {
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token")
 
   const res = await fetch(
       `${API_BASE_URL}/vnpay/create-payment?amount=${amount}`,
@@ -304,13 +284,13 @@ export async function createVNPayPayment(amount) {
           Authorization: `Bearer ${token}`,
         },
       }
-  );
+  )
 
   if (!res.ok) {
-    throw new Error("Create payment failed");
+    throw new Error("Create payment failed")
   }
 
-  const data = await res.json();
+  const data = await res.json()
 
-  return data.paymentUrl;
+  return data.paymentUrl
 }
