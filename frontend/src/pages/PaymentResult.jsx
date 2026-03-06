@@ -7,7 +7,6 @@ export default function PaymentResult() {
     const [params] = useSearchParams()
 
     const responseCode = params.get("vnp_ResponseCode")
-
     const bikeId = params.get("bikeId")
 
     const success = responseCode === "00"
@@ -16,13 +15,13 @@ export default function PaymentResult() {
 
         const handleCreateOrder = async () => {
 
-            if(success && bikeId){
+            if (success && bikeId) {
 
-                try{
+                try {
 
                     await createOrder(bikeId)
 
-                }catch(err){
+                } catch (err) {
 
                     console.error("Create order error:", err)
 
@@ -59,7 +58,7 @@ export default function PaymentResult() {
 
             <Link
                 to="/"
-                style={{marginTop:"20px",display:"inline-block"}}
+                style={{ marginTop: "20px", display: "inline-block" }}
             >
                 Quay về trang chủ
             </Link>
