@@ -4,7 +4,7 @@
  * ============================================================
  */
 
-const API_BASE_URL =
+export const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
 /**
@@ -84,10 +84,6 @@ export async function login(credentials) {
     console.warn("Backend login failed → fallback mock");
   }
 
-  /**
-   * FALLBACK MOCK
-   */
-
   await new Promise((r) => setTimeout(r, 300));
 
   const account = TEST_ACCOUNTS[email.toLowerCase()];
@@ -162,17 +158,24 @@ export async function register(data) {
 
 /**
  * ============================================================
- * MOCK APIs KHÁC (GIỮ NGUYÊN)
+ * SELLER REGISTER
  * ============================================================
  */
 
 export async function registerSeller(data) {
   await new Promise((r) => setTimeout(r, 500));
+
   return {
     success: true,
     message: "Đăng ký Seller thành công.",
   };
 }
+
+/**
+ * ============================================================
+ * LISTINGS
+ * ============================================================
+ */
 
 export async function getListings() {
   const { MOCK_LISTINGS, MOCK_TOTAL_LISTINGS } = await import(
@@ -193,6 +196,12 @@ export async function getListingById(id) {
   return item || null;
 }
 
+/**
+ * ============================================================
+ * PROFILE
+ * ============================================================
+ */
+
 export async function getProfile(userId) {
   const account = Object.values(TEST_ACCOUNTS).find((a) => a.id === userId);
 
@@ -208,9 +217,21 @@ export async function updateProfile() {
   return { success: true };
 }
 
+/**
+ * ============================================================
+ * INSPECTION
+ * ============================================================
+ */
+
 export async function submitInspection() {
   return { success: true };
 }
+
+/**
+ * ============================================================
+ * BRANDS
+ * ============================================================
+ */
 
 export async function getBrands() {
   const { BICYCLE_BRANDS } = await import("../data/hardcoded.js");
@@ -218,6 +239,39 @@ export async function getBrands() {
   return { data: BICYCLE_BRANDS };
 }
 
-export async function createOrder() {
-  return { success: true };
+/**
+ * ============================================================
+ * ORDER
+ * ============================================================
+ */
+
+export async function createOrder(bikeId, token) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        bikeId: bikeId,
+      }),
+    });
+
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.warn("Backend order failed → fallback mock");
+  }
+
+  // mock fallback
+  await new Promise((r) => setTimeout(r, 300));
+
+  return {
+    success: true,
+    data: {
+      id: Math.floor(Math.random() * 100000),
+    },
+  };
 }
