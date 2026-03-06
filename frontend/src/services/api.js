@@ -4,8 +4,8 @@
  * ============================================================
  */
 
-const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+export const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 /**
  * ============================================================
@@ -67,6 +67,8 @@ export async function login(credentials) {
       if (json?.success && json?.data) {
         const d = json.data;
 
+        localStorage.setItem("token", d.accessToken);
+
         return {
           success: true,
           token: d.accessToken,
@@ -84,15 +86,13 @@ export async function login(credentials) {
     console.warn("Backend login failed → fallback mock");
   }
 
-  /**
-   * FALLBACK MOCK
-   */
-
   await new Promise((r) => setTimeout(r, 300));
 
   const account = TEST_ACCOUNTS[email.toLowerCase()];
 
   if (account && password === TEST_PASSWORD) {
+    localStorage.setItem("token", "MOCK_JWT_TOKEN");
+
     return {
       success: true,
       token: "MOCK_JWT_TOKEN",
@@ -162,17 +162,24 @@ export async function register(data) {
 
 /**
  * ============================================================
- * MOCK APIs KHÁC (GIỮ NGUYÊN)
+ * SELLER REGISTER
  * ============================================================
  */
 
 export async function registerSeller(data) {
   await new Promise((r) => setTimeout(r, 500));
+
   return {
     success: true,
     message: "Đăng ký Seller thành công.",
   };
 }
+
+/**
+ * ============================================================
+ * LISTINGS
+ * ============================================================
+ */
 
 export async function getListings() {
   const { MOCK_LISTINGS, MOCK_TOTAL_LISTINGS } = await import(
@@ -193,6 +200,12 @@ export async function getListingById(id) {
   return item || null;
 }
 
+/**
+ * ============================================================
+ * PROFILE
+ * ============================================================
+ */
+
 export async function getProfile(userId) {
   const account = Object.values(TEST_ACCOUNTS).find((a) => a.id === userId);
 
@@ -208,9 +221,26 @@ export async function updateProfile() {
   return { success: true };
 }
 
-export async function submitInspection() {
-  return { success: true };
+/**
+ * ============================================================
+ * INSPECTION
+ * ============================================================
+ */
+
+export async function submitInspection(data) {
+  await new Promise((r) => setTimeout(r, 300));
+
+  return {
+    success: true,
+    message: "Inspection submitted",
+  };
 }
+
+/**
+ * ============================================================
+ * BRANDS
+ * ============================================================
+ */
 
 export async function getBrands() {
   const { BICYCLE_BRANDS } = await import("../data/hardcoded.js");
@@ -218,6 +248,69 @@ export async function getBrands() {
   return { data: BICYCLE_BRANDS };
 }
 
-export async function createOrder() {
-  return { success: true };
+/**
+ * ============================================================
+ * ORDER
+ * ============================================================
+ */
+
+export async function createOrder(bikeId) {
+
+  const token = localStorage.getItem("token");
+
+  const idempotencyKey =
+      Math.random().toString(36).substring(2) + Date.now();
+
+  console.log("Creating order for bike:", bikeId);
+
+  const res = await fetch(`${API_BASE_URL}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      bikeId: bikeId,
+      idempotencyKey: idempotencyKey,
+    }),
+  });
+
+  const text = await res.text();
+
+  console.log("ORDER RESPONSE:", text);
+
+  if (!res.ok) {
+    throw new Error(text);
+  }
+
+  return JSON.parse(text);
+}
+
+/**
+ * ============================================================
+ * VNPAY PAYMENT
+ * ============================================================
+ */
+
+export async function createVNPayPayment(amount) {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+      `${API_BASE_URL}/vnpay/create-payment?amount=${amount}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+  );
+
+  if (!res.ok) {
+    throw new Error("Create payment failed");
+  }
+
+  const data = await res.json();
+
+  return data.paymentUrl;
 }

@@ -2,8 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    open: 'chrome',
-  },
+    plugins: [react()],
+    server: {
+        open: 'chrome',
+    },
 })
