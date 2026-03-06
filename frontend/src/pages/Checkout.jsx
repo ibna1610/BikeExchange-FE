@@ -1,81 +1,40 @@
 import { useLocation } from "react-router-dom"
-import { createVNPayPayment, createOrder } from "../services/api"
 
 export default function Checkout() {
 
     const location = useLocation()
-
     const bike = location.state?.bike
 
-    const handlePayment = async () => {
+    const handlePayment = () => {
 
-        try {
-
-            if (!bike) {
-                alert("Không có sản phẩm")
-                return
-            }
-
-            let amount = 0
-
-            if (bike.price.includes("Triệu")) {
-                amount = parseFloat(bike.price) * 1000000
-            } else {
-                amount = parseInt(bike.price.replace(/\D/g, ""))
-            }
-
-            const paymentUrl = await createVNPayPayment(amount)
-
-            window.location.href = paymentUrl
-
-        } catch (err) {
-
-            console.error(err)
-
-            alert("Thanh toán thất bại")
-
+        if (!bike) {
+            alert("Không có sản phẩm")
+            return
         }
 
-    }
+        let amount = 0
 
-    const handlePaymentSuccess = async () => {
-
-        try {
-
-            await createOrder(bike.id)
-
-            alert("Thanh toán thành công. Đơn hàng đã được tạo.")
-
-        } catch (err) {
-
-            console.warn("Backend error -> fallback demo")
-
-            alert("Thanh toán thành công. Đơn hàng đã được tạo.")
-
+        if (bike.price.includes("Triệu")) {
+            amount = parseFloat(bike.price) * 1000000
+        } else {
+            amount = parseInt(bike.price.replace(/\D/g, ""))
         }
 
-        window.location.href = "/"
+        // redirect thẳng sang backend VNPay
+        const paymentUrl = `http://localhost:8080/api/vnpay/create-payment?amount=${amount}`
 
-    }
-
-    const handleCancel = () => {
-
-        window.location.href = "/"
-
+        window.location.href = paymentUrl
     }
 
     if (!bike) {
-
         return (
             <div className="main-content">
                 <h2>Không tìm thấy sản phẩm</h2>
             </div>
         )
-
     }
 
     return (
-
         <div className="main-content">
 
             <h2>Xác nhận đơn hàng</h2>
@@ -86,15 +45,10 @@ export default function Checkout() {
                 borderRadius:"10px",
                 maxWidth:"600px"
             }}>
-
                 <h3>{bike.title}</h3>
-
                 <p>Giá: {bike.price}</p>
-
                 <p>Người bán: {bike.contactName}</p>
-
                 <p>Địa điểm: {bike.location}</p>
-
             </div>
 
             <button
@@ -112,41 +66,6 @@ export default function Checkout() {
                 Thanh toán VNPay
             </button>
 
-            <div style={{marginTop:"20px"}}>
-
-                <button
-                    onClick={handlePaymentSuccess}
-                    style={{
-                        padding:"12px 25px",
-                        background:"#27ae60",
-                        color:"#fff",
-                        border:"none",
-                        borderRadius:"6px",
-                        marginRight:"10px",
-                        cursor:"pointer"
-                    }}
-                >
-                    Tôi đã thanh toán thành công
-                </button>
-
-                <button
-                    onClick={handleCancel}
-                    style={{
-                        padding:"12px 25px",
-                        background:"#e74c3c",
-                        color:"#fff",
-                        border:"none",
-                        borderRadius:"6px",
-                        cursor:"pointer"
-                    }}
-                >
-                    Hủy thanh toán
-                </button>
-
-            </div>
-
         </div>
-
     )
-
 }
