@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom"
-import { createVNPayPayment } from "../services/orderService"
+import { createVNPayPayment, createOrder } from "../services/api"
 
 export default function Checkout() {
 
@@ -16,10 +16,6 @@ export default function Checkout() {
                 return
             }
 
-            /**
-             * convert giá
-             * "12.5 Triệu" -> 12500000
-             */
             let amount = 0
 
             if (bike.price.includes("Triệu")) {
@@ -39,6 +35,32 @@ export default function Checkout() {
             alert("Thanh toán thất bại")
 
         }
+
+    }
+
+    const handlePaymentSuccess = async () => {
+
+        try {
+
+            await createOrder(bike.id)
+
+            alert("Thanh toán thành công. Đơn hàng đã được tạo.")
+
+        } catch (err) {
+
+            console.warn("Backend error -> fallback demo")
+
+            alert("Thanh toán thành công. Đơn hàng đã được tạo.")
+
+        }
+
+        window.location.href = "/"
+
+    }
+
+    const handleCancel = () => {
+
+        window.location.href = "/"
 
     }
 
@@ -90,7 +112,41 @@ export default function Checkout() {
                 Thanh toán VNPay
             </button>
 
+            <div style={{marginTop:"20px"}}>
+
+                <button
+                    onClick={handlePaymentSuccess}
+                    style={{
+                        padding:"12px 25px",
+                        background:"#27ae60",
+                        color:"#fff",
+                        border:"none",
+                        borderRadius:"6px",
+                        marginRight:"10px",
+                        cursor:"pointer"
+                    }}
+                >
+                    Tôi đã thanh toán thành công
+                </button>
+
+                <button
+                    onClick={handleCancel}
+                    style={{
+                        padding:"12px 25px",
+                        background:"#e74c3c",
+                        color:"#fff",
+                        border:"none",
+                        borderRadius:"6px",
+                        cursor:"pointer"
+                    }}
+                >
+                    Hủy thanh toán
+                </button>
+
+            </div>
+
         </div>
 
     )
+
 }

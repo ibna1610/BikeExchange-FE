@@ -1,20 +1,51 @@
+import { useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
+import { createOrder } from "../services/api"
 
 export default function PaymentResult() {
 
     const [params] = useSearchParams()
 
-    const status = params.get("status")
+    const responseCode = params.get("vnp_ResponseCode")
+
+    const bikeId = params.get("bikeId")
+
+    const success = responseCode === "00"
+
+    useEffect(() => {
+
+        const handleCreateOrder = async () => {
+
+            if(success && bikeId){
+
+                try{
+
+                    await createOrder(bikeId)
+
+                }catch(err){
+
+                    console.error("Create order error:", err)
+
+                }
+
+            }
+
+        }
+
+        handleCreateOrder()
+
+    }, [success, bikeId])
 
     return (
 
         <div className="main-content">
 
-            {status === "success" ? (
+            {success ? (
 
                 <>
                     <h2>Thanh toán thành công 🎉</h2>
-                    <p>Đơn hàng của bạn đã được ghi nhận.</p>
+                    <p>Tiền đã được giữ trong ví trung gian.</p>
+                    <p>Seller sẽ giao xe cho bạn.</p>
                 </>
 
             ) : (
@@ -26,11 +57,15 @@ export default function PaymentResult() {
 
             )}
 
-            <Link to="/" style={{marginTop:"20px",display:"inline-block"}}>
+            <Link
+                to="/"
+                style={{marginTop:"20px",display:"inline-block"}}
+            >
                 Quay về trang chủ
             </Link>
 
         </div>
 
     )
+
 }

@@ -7,14 +7,14 @@ export async function createVNPayPayment(amount) {
     const res = await fetch(
         `${API_BASE}/vnpay/create-payment?amount=${amount}`,
         {
-            method:"GET",
-            headers:{
-                Authorization:`Bearer ${token}`
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
             }
         }
     )
 
-    if(!res.ok){
+    if (!res.ok) {
         throw new Error("Create payment failed")
     }
 

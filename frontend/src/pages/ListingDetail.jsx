@@ -80,7 +80,6 @@ export default function ListingDetail() {
 
         <div className="detail-layout">
 
-          {/* IMAGE */}
           <div className="detail-gallery">
 
             <img
@@ -91,7 +90,6 @@ export default function ListingDetail() {
 
           </div>
 
-          {/* INFO */}
           <div className="detail-info">
 
             <h1>{item.title}</h1>
@@ -116,7 +114,6 @@ export default function ListingDetail() {
 
             )}
 
-            {/* SELLER */}
             <div className="detail-seller">
 
               <strong>{item.contactName}</strong>
@@ -125,7 +122,6 @@ export default function ListingDetail() {
 
             </div>
 
-            {/* ACTIONS */}
             <div className="detail-actions">
 
               <button className="btn btn-primary">

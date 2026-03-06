@@ -5,7 +5,7 @@
  */
 
 export const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+    import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 /**
  * ============================================================
@@ -67,6 +67,8 @@ export async function login(credentials) {
       if (json?.success && json?.data) {
         const d = json.data;
 
+        localStorage.setItem("token", d.accessToken);
+
         return {
           success: true,
           token: d.accessToken,
@@ -89,6 +91,8 @@ export async function login(credentials) {
   const account = TEST_ACCOUNTS[email.toLowerCase()];
 
   if (account && password === TEST_PASSWORD) {
+    localStorage.setItem("token", "MOCK_JWT_TOKEN");
+
     return {
       success: true,
       token: "MOCK_JWT_TOKEN",
@@ -223,8 +227,13 @@ export async function updateProfile() {
  * ============================================================
  */
 
-export async function submitInspection() {
-  return { success: true };
+export async function submitInspection(data) {
+  await new Promise((r) => setTimeout(r, 300));
+
+  return {
+    success: true,
+    message: "Inspection submitted",
+  };
 }
 
 /**
@@ -245,33 +254,63 @@ export async function getBrands() {
  * ============================================================
  */
 
-export async function createOrder(bikeId, token) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        bikeId: bikeId,
-      }),
-    });
+export async function createOrder(bikeId) {
 
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (e) {
-    console.warn("Backend order failed → fallback mock");
+  const token = localStorage.getItem("token");
+
+  const idempotencyKey =
+      Math.random().toString(36).substring(2) + Date.now();
+
+  console.log("Creating order for bike:", bikeId);
+
+  const res = await fetch(`${API_BASE_URL}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      bikeId: bikeId,
+      idempotencyKey: idempotencyKey,
+    }),
+  });
+
+  const text = await res.text();
+
+  console.log("ORDER RESPONSE:", text);
+
+  if (!res.ok) {
+    throw new Error(text);
   }
 
-  // mock fallback
-  await new Promise((r) => setTimeout(r, 300));
+  return JSON.parse(text);
+}
 
-  return {
-    success: true,
-    data: {
-      id: Math.floor(Math.random() * 100000),
-    },
-  };
+/**
+ * ============================================================
+ * VNPAY PAYMENT
+ * ============================================================
+ */
+
+export async function createVNPayPayment(amount) {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+      `${API_BASE_URL}/vnpay/create-payment?amount=${amount}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+  );
+
+  if (!res.ok) {
+    throw new Error("Create payment failed");
+  }
+
+  const data = await res.json();
+
+  return data.paymentUrl;
 }
